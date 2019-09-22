@@ -10,8 +10,9 @@ function User(socketId, username, colour) {
     this.Username = username;
     this.Colour = colour;
 }
+
 app.get('/', function(req, res){
-    res.sendFile(__dirname + '/index.html');
+    res.sendFile(__dirname + '/public/index.html');
 });
 
 io.on('connection', function(socket){
@@ -23,7 +24,6 @@ io.on('connection', function(socket){
     socket.emit("edit users", loggedInUsers);
     socket.on('message', function(msg){
         messages.push(msg);
-        console.log(msg);
         io.emit("message", msg);
     });
 });
