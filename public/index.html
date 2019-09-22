@@ -1,17 +1,91 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
+<!doctype html>
+<html>
+<head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <link rel="icon" href="<%= BASE_URL %>favicon.ico">
-    <title>the-amazing-chat</title>
-  </head>
-  <body>
-    <noscript>
-      <strong>We're sorry but the-amazing-chat doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
-    </noscript>
-    <div id="app"></div>
-    <!-- built files will be auto injected -->
-  </body>
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>The Amazing Chat</title>
+
+    <link rel="shortcut icon" href="https://material.io/static/images/simple-lp/favicons/components-72x72.png">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/normalize/6.0.0/normalize.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font: 13px Roboto, Helvetica, Arial; }
+        header { text-align: center; font-size: 18px; font-weight: 700; background: lightcyan; padding: 10px;}
+        p { text-align: center; }
+        #list { width: 30%; background: darkcyan; color: white; padding: 10px; position: fixed; bottom: 0;}
+        #list p { font-size: 18px; font-weight: 700; margin-bottom: 10px }
+        #list #users { list-style-type: none; }
+        #list #users li { padding-bottom: 4px; }
+        #chat { width: 70%; position: fixed; bottom: 0; right: 0; background: lightcyan; padding: 20px;}
+        #messages { list-style-type: none; margin: 0; padding: 0; max-height: 250px; overflow: auto; }
+        #messages li { padding: 5px 10px; }
+        form {  padding: 3px; width: 100%; }
+        form input { border: 0; padding: 10px; width: 80%; margin-right: .5%; }
+        form button { width: 19%; background: rgb(56, 224, 255); border: none; padding: 10px; }
+    </style>
+</head>
+<body>
+<section>
+    <header>The Amazing Chat</header>
+    <br>
+    <p>
+        My name is <span id="user"></span> and my color is <span id="colour"></span>
+    </p>
+</section>
+<main>
+    <section id="list">
+        <p>
+            <span id="count"></span> users connected
+        </p>
+        <ul id="users"></ul>
+    </section>
+    <section id="chat">
+        <ul id="messages"></ul>
+        <form action="">
+            <input id="msg" autocomplete="off" /><button>Send</button>
+        </form>
+    </section>
+</main>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+<script>
+    $(function () {
+        $('#messages').change(function () {
+                console.log('change msg');
+                $('#messages').animate({ scrollTop: $('#messages').height() }, 300);
+            }
+        );
+
+        let socket = io();
+        let currentUser;
+
+        socket.on('connection', function(user){
+            $('#user').text(user.Username);
+            $('#colour').text(user.Colour);
+            currentUser = user;
+        });
+
+        $('form').submit(function(e){
+            e.preventDefault(); // prevents page reloading
+            let msg = { author: currentUser.Username, content: $('#msg').val(), colour: currentUser.Colour };
+            socket.emit("message", msg);
+            $('#msg').val('');
+            return false;
+        });
+        socket.on('message', function(msg){
+            $('#messages').append($('<li>').text(msg.author + ' said: ' + msg.content).css({ "background-color": msg.colour, "border-left": "5px solid #ccc" })).trigger('change');
+        });
+        socket.on('edit users', function(users){
+            $('#count').html(users.length);
+            for (let user of users) {
+                $('#users').append($('<li>').text(user.Username));
+            }
+        });
+    });
+</script>
+</body>
 </html>
