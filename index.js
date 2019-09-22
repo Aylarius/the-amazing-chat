@@ -15,6 +15,7 @@ app.get('/', function(req, res){
     res.sendFile(__dirname + '/public/index.html');
 });
 
+
 io.on('connection', function(socket){
     console.log('Someone connected:' + socket.id);
     let colour = '#' + Math.floor(Math.random()*16777215).toString(16);
@@ -22,9 +23,17 @@ io.on('connection', function(socket){
     loggedInUsers.push(user);
     socket.emit("connection", user);
     socket.emit("edit users", loggedInUsers);
+
     socket.on('message', function(msg){
         messages.push(msg);
         io.emit("message", msg);
+    });
+
+    socket.on('gif', function(){
+        http.get('http://api.giphy.com/v1/gifs/random', function(req, res) {
+            let gif = res.data.url;
+            io.emit("random gif", gif);
+        });
     });
 });
 
