@@ -21,9 +21,11 @@ io.on('connection', function(socket){
     let colour = '#' + Math.floor(Math.random()*16777215).toString(16);
     let user = new User(socket.id, faker.internet.userName(), colour);
 
-    loggedInUsers.push(user);
     socket.emit("connection", user);
-    io.emit("edit users", loggedInUsers);
+    if (!loggedInUsers.includes(user)) {
+        loggedInUsers.push(user);
+        io.emit("edit users", loggedInUsers);
+    }
 
     socket.on('join', function (user) {
         socket.join(user.Username);
@@ -42,10 +44,15 @@ io.on('connection', function(socket){
                 io.to(socket.id).emit('ping received', 'pong');
                 break;
             case msg.content.startsWith('@'):
-                let sender = msg.content.split(" ")[0].replace("@", "");
-                let content = msg.content.replace("@"+sender, "");
-                if (loggedInUsers.includes(sender)) {
-                    socket.emit('private message', sender, content);
+                let receiver = msg.content.split(" ")[0].replace("@", "");
+                let content = msg.content.replace("@"+receiver, "");
+                if (loggedInUsers.filter(user => user.Username === receiver).length === 1) {
+                    if (user.Username === receiver) {
+                        io.to(socket.id).emit('self message sent', receiver, content);
+                    } else {
+                        socket.broadcast.in(receiver).emit('private message received', user.Username, content);
+                        io.to(socket.id).emit('private message sent', receiver, content);
+                    }
                 }
                 break;
             default:
@@ -54,12 +61,7 @@ io.on('connection', function(socket){
         messages.push(msg);
     });
 
-    socket.on('private message', function (sender, msg) {
-        socket.broadcast.in(sender).emit('private message received', sender, msg);
-    });
-
     socket.on('disconnect', function() {
-        console.log('disconnect => ' + socket.id);
         loggedInUsers = loggedInUsers.filter(user => user.Id !== socket.id);
         io.emit("edit users", loggedInUsers);
     });

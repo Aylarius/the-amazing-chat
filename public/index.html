@@ -61,9 +61,11 @@
         });
         $('form').submit(function(e){
             e.preventDefault();
-            let msg = { author: currentUser.Username, content: message.val(), colour: currentUser.Colour };
-            socket.emit("message", msg);
-            message.val('');
+            if (message.val().trim().length >= 1) {
+                let msg = { author: currentUser.Username, content: message.val(), colour: currentUser.Colour };
+                socket.emit("message", msg);
+                message.val('');
+            }
             return false;
         });
         socket.on('message', function(msg){
@@ -73,6 +75,7 @@
             messagesSelector.append($('<li>').text(msg).css({ "background-color": "lightgrey", "border-left": "5px solid #ccc" })).trigger('change');
         });
         socket.on('edit users', function(users){
+            usersSelector.html('');
             $('#count').html(users.length);
             for (let user of users) {
                 usersSelector.append($('<li>').text(user.Username)).trigger('change');
@@ -81,6 +84,12 @@
         });
         socket.on('private message received', function (sender, msg){
             messagesSelector.append($('<li>').text(sender + ' (privately) said: ' + msg).css({ "background-color": "coral", "border-left": "5px solid #ccc" })).trigger('change');
+        });
+        socket.on('private message sent', function (receiver, msg){
+            messagesSelector.append($('<li>').text( '(To ' + receiver +') You said: ' + msg).css({ "background-color": "coral", "border-left": "5px solid #ccc" })).trigger('change');
+        });
+        socket.on('self message sent', function (receiver, msg){
+            messagesSelector.append($('<li>').text( 'You said to yourself: ' + msg).css({ "background-color": "lightblue", "border-left": "5px solid #ccc" })).trigger('change');
         });
         socket.on('ping received', function(msg){
             alert(msg);
