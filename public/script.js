@@ -19,12 +19,19 @@ $(function () {
         messagesSelector.append($('<li>').text(content).css({ "background-color": color, "border-left": "5px solid #ccc" })).trigger('change');
     }
 
-    socket.on('connection', function(user){
-        $('#user').text(user.Username);
-        $('#colour').text(user.Colour);
-        currentUser = user;
-        socket.emit('join', user);
+    message.keyup(function( event ) {
+        if (event.key === '@') {
+
+            var options = {
+                data: connectedUsers.map(user => user.Username),
+            };
+            console.log(options);
+
+            message.easyAutocomplete(options);
+
+        }
     });
+
     $('form').submit(function(e){
         e.preventDefault();
         if (message.val().trim().length >= 1) {
@@ -33,6 +40,13 @@ $(function () {
             message.val('');
         }
         return false;
+    });
+
+    socket.on('connection', function(user){
+        $('#user').text(user.Username);
+        $('#colour').text(user.Colour);
+        currentUser = user;
+        socket.emit('join', user);
     });
     socket.on('message', function(msg){
         addMessage(msg.author + ' said: ' + msg.content, msg.colour);
