@@ -8,6 +8,7 @@
     <base href="/">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/6.0.0/normalize.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet">
+    <link href="easy-autocomplete.css" rel="stylesheet">
     <link href="style.css" type="text/css" rel="stylesheet">
 </head>
 <body>
@@ -28,14 +29,15 @@
     <section id="chat">
         <ul id="messages"></ul>
         <form action="">
-            <input id="msg" autocomplete="off"/>
+            <input id="msg" class="easy-autocomplete" />
             <button>Send</button>
         </form>
     </section>
 </main>
 
 <script src="socket.io/socket.io.js"></script>
-<script src="//code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="jquery.easy-autocomplete.min.js"></script>
 <script type="text/javascript" src="script.js"></script>
 </body>
 </html>
